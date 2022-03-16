@@ -3,7 +3,7 @@
     "outDir": "dist",
     "target": "es2022",
     "sourceMap": true,
-    "rootDir": "server",
+    "rootDirs": ["server", "tests"],
     "baseUrl": "server",
     "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
@@ -15,5 +15,5 @@
     "strict": true,
     "noImplicitOverride": true
   },
-  "include": ["server"]
+  "include": ["server", "tests"]
 }
