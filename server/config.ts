@@ -6,7 +6,31 @@ const root = join(currentDir, '../')
 const audioDirectory = join(root, 'audio')
 const publicDirectory = join(root, 'public')
 
-export default {
+type Config = {
+  port: number
+  dir: {
+    root: string
+    publicDirectory: string
+    audioDirectory: string
+    songsDirectory: string
+    fxDirectory: string
+  }
+  pages: {
+    homeHTML: string
+    controllerHTML: string
+  }
+  location: {
+    home: string
+  }
+  constants: {
+    CONTENT_TYPE: {
+      [key: string]: string
+    }
+  }
+
+}
+
+const config: Config = {
   port: get('PORT').default(3000).asPortNumber(),
   dir: {
     root,
@@ -30,3 +54,5 @@ export default {
     }
   }
 }
+
+export default config
