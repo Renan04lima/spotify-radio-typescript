@@ -1,4 +1,5 @@
 import { logger } from './util'
 import server from './server'
+import config from './config'
 
-server.listen(3000).on('listening', () => logger.info('server running'))
+server.listen(config.port).on('listening', () => logger.info(`server running on port ${config.port}`))
