@@ -23,6 +23,10 @@
     "url": "https://github.com/Renan04lima/spotify-radio/issues"
   },
   "homepage": "https://github.com/Renan04lima/spotify-radio#readme",
+  "dependencies": {
+    "pino": "^7.8.1",
+    "pino-pretty": "^7.5.3"
+  },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
     "@babel/core": "^7.15.5",
