@@ -5,7 +5,7 @@ const currentDir = __dirname
 const root = join(currentDir, '../')
 const audioDirectory = join(root, 'audio')
 const publicDirectory = join(root, 'public')
-
+const songsDirectory = join(audioDirectory, 'songs')
 type Config = {
   port: number
   dir: {
@@ -27,7 +27,11 @@ type Config = {
       [key: string]: string
     }
   }
-
+  audioMediaType: string
+  songVolume: string
+  fallbackBitRate: string
+  bitRateDivisor: number
+  englishConversation: string
 }
 
 const config: Config = {
@@ -52,7 +56,12 @@ const config: Config = {
       '.css': 'text/css',
       '.js': 'text/javascript'
     }
-  }
+  },
+  audioMediaType: 'mp3',
+  songVolume: '0.99',
+  fallbackBitRate: '128000',
+  bitRateDivisor: 8,
+  englishConversation: join(songsDirectory, 'conversation.mp3')
 }
 
 export default config
