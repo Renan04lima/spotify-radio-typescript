@@ -29,7 +29,8 @@
   "dependencies": {
     "env-var": "^7.1.1",
     "pino": "^7.8.1",
-    "pino-pretty": "^7.5.3"
+    "pino-pretty": "^7.5.3",
+    "throttle": "^1.0.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
