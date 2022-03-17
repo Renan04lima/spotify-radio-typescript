@@ -13,9 +13,12 @@ const {
 
 describe('#Service', () => {
   let sut: Service
-
+  let mockReadableStream: ReadStream
   beforeAll(() => {
+    mockReadableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
     sut = new Service()
+    jest.spyOn(fs, 'createReadStream').mockReturnValue(mockReadableStream)
+    jest.spyOn(fsPromises, 'access').mockResolvedValue()
   })
 
   describe('createFileStream()', () => {
@@ -26,11 +29,8 @@ describe('#Service', () => {
     })
 
     test('should return a ReadableStream on success', async () => {
-      const readableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
-
-      jest.spyOn(fs, 'createReadStream').mockReturnValue(readableStream)
       const result = sut.createFileStream('any_filename')
-      expect(result).toEqual(readableStream)
+      expect(result).toEqual(mockReadableStream)
     })
   })
 
@@ -38,11 +38,22 @@ describe('#Service', () => {
     test('should return type and name on success', async () => {
       const file = 'any_file.txt'
       const expectedName = `${publicDirectory}/${file}`
-      jest.spyOn(fsPromises, 'access').mockResolvedValue()
       const result = await sut.getFileInfo(file)
 
       expect(result).toEqual({
         name: expectedName,
+        type: '.txt'
+      })
+    })
+  })
+
+  describe('getFileStream()', () => {
+    test('should return type and stream on success', async () => {
+      const file = 'any_file.txt'
+      const result = await sut.getFileStream(file)
+
+      expect(result).toEqual({
+        stream: mockReadableStream,
         type: '.txt'
       })
     })
