@@ -4,6 +4,7 @@ import { Controller } from './controller'
 import { logger } from './util'
 
 import { IncomingMessage, ServerResponse } from 'http'
+import { ReadStream } from 'fs'
 
 const {
   location,
@@ -54,17 +55,28 @@ async function routes (request: IncomingMessage, response: ServerResponse): Prom
   if (method === 'GET') {
     const regexURL = /(http[s]?:\/\/)?([^/\s]+\/)(.*)/
     const referer = request.headers.referer
-    if (url === undefined || referer === undefined) {
+    if (url === undefined) {
       response.writeHead(400)
       return response.end()
     }
-    const havePathURL = referer.match(regexURL)
-    if (havePathURL === null) {
-      response.writeHead(400)
-      return response.end()
+
+    let fileStream: {
+      type: string
+      stream: ReadStream
     }
-    const pathURL = havePathURL[3]
-    const { stream, type } = await controller.getFileStream(pathURL + url)
+    if (referer === undefined) {
+      fileStream = await controller.getFileStream(url)
+    } else {
+      const havePathURL = referer.match(regexURL)
+      if (havePathURL === null) {
+        response.writeHead(500)
+        return response.end()
+      }
+      const pathURL = havePathURL[3]
+      fileStream = await controller.getFileStream(pathURL + url)
+    }
+
+    const { stream, type } = fileStream
 
     const contentType = CONTENT_TYPE[type]
     if (contentType != null) {
