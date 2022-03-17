@@ -12,7 +12,8 @@
     "dev": "ts-node-dev --respawn --transpile-only server",
     "test": "LOG_DISABLE=true jest --no-cache",
     "test:watch": "npm t -- --watchAll",
-    "test:coverage": "npm t -- --coverage tests/unit"
+    "test:coverage": "npm t -- --coverage tests/unit",
+    "dev:docker": "docker-compose up dev"
   },
   "repository": {
     "type": "git",
