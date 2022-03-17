@@ -25,11 +25,11 @@ export default class TestUtil {
     })
   }
 
-  static defaultHandleParams (): any {
+  static defaultHandleParams (): {request: any, response: any} {
     const requestStream = TestUtil.generateReadableStream(['body da requisicao'])
     const responseStream = TestUtil.generateWritableStream(() => {})
 
-    const data = {
+    return {
       request: Object.assign(requestStream, {
         headers: {},
         method: '',
@@ -39,11 +39,6 @@ export default class TestUtil {
         writeHead: jest.fn(),
         end: jest.fn()
       })
-    }
-
-    return {
-      values: () => Object.values(data),
-      ...data
     }
   }
 }
