@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 
 import { Readable, Writable } from 'stream'
