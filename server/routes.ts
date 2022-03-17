@@ -68,8 +68,13 @@ async function routes (request: IncomingMessage, response: ServerResponse): Prom
       fileStream = await controller.getFileStream(url)
     } else {
       const havePathURL = referer.match(regexURL)
-      if (havePathURL === null) {
-        response.writeHead(500)
+      if (havePathURL == null) {
+        response.writeHead(400) // invalid url
+        return response.end()
+      }
+
+      if (havePathURL.some(i => i === undefined)) {
+        response.writeHead(400) // invalid path
         return response.end()
       }
       const pathURL = havePathURL[3]
