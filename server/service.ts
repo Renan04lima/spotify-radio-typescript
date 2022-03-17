@@ -1,14 +1,18 @@
+import config from './config'
+
 import { createReadStream, ReadStream } from 'fs'
 import fsPromises from 'fs/promises'
 import { randomUUID } from 'crypto'
 import { PassThrough } from 'stream'
-import config from './config'
 import { join, extname } from 'path'
+import childProcess from 'child_process'
+import { logger } from './util'
 
 const {
   dir: {
     publicDirectory
-  }
+  },
+  fallbackBitRate
 } = config
 
 export class Service {
@@ -35,6 +39,37 @@ export class Service {
 
   createFileStream (filename: string): ReadStream {
     return createReadStream(filename)
+  }
+
+  _executeSoxCommand (args: any): childProcess.ChildProcessWithoutNullStreams {
+    return childProcess.spawn('sox', args)
+  }
+
+  async getBitRate (song: string): Promise<string> {
+    try {
+      const args = [
+        '--i', // info
+        '-B', // bitrate
+        song
+      ]
+      const {
+        stderr, // tudo que é erro
+        stdout // tudo que é log
+        // stdin // enviar dados como stream
+      } = this._executeSoxCommand(args)
+
+      const [success, error] = [stdout, stderr].map(stream => stream.read())
+      if (error != null) return await Promise.reject(error)
+      return success
+        .toString()
+        .trim()
+        .replace(/k/, '000')
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      logger.error(`deu ruim no bitrate: ${error}`)
+
+      return fallbackBitRate
+    }
   }
 
   async getFileInfo (file: string): Promise<{type: string, name: string}> {
