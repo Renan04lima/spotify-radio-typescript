@@ -10,7 +10,7 @@
     "build": "rm -rf dist && babel server --extensions \".js,.ts\" --out-dir dist --copy-files",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only server",
-    "test": "jest --no-cache",
+    "test": "LOG_DISABLE=true jest --no-cache",
     "test:watch": "npm t -- --watchAll",
     "test:coverage": "npm t -- --coverage tests/unit"
   },

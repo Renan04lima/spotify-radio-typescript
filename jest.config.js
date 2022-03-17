@@ -22,7 +22,8 @@ const defaultConfig = {
   ],
   transform: {
     '.+\\.ts$': 'ts-jest'
-  }
+  },
+  clearMocks: true
 }
 
 module.exports = {
