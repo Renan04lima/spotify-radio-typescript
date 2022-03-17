@@ -45,6 +45,15 @@ describe('#Service', () => {
         type: '.txt'
       })
     })
+
+    test('should rethrow if fsPromises.access throw', async () => {
+      const file = 'any_file.txt'
+      const error = new Error('file_not_exists')
+      jest.spyOn(fsPromises, 'access').mockRejectedValueOnce(error)
+      const promise = sut.getFileInfo(file)
+
+      await expect(promise).rejects.toEqual(error)
+    })
   })
 
   describe('getFileStream()', () => {
