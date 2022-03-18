@@ -17,6 +17,25 @@ export class Controller {
     return this.service.getFileStream(filename)
   }
 
+  async handleCommand ({ command }: {command: string}): Promise<{result: string}| undefined> {
+    logger.info(`command received: ${command}`)
+    const result = {
+      result: 'ok'
+    }
+
+    const cmd = command.toLowerCase()
+    if (cmd.includes('start')) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.service.startStreamming()
+      return result
+    }
+
+    if (cmd.includes('stop')) {
+      this.service.stopStreamming()
+      return result
+    }
+  }
+
   createClientStream (): {stream: PassThrough, onClose: () => void} {
     const {
       id,

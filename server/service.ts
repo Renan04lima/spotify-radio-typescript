@@ -4,7 +4,7 @@ import { logger } from './util'
 import { createReadStream, ReadStream } from 'fs'
 import fsPromises from 'fs/promises'
 import { randomUUID } from 'crypto'
-import { PassThrough, Writable } from 'stream'
+import { PassThrough, PipelinePromise, Writable } from 'stream'
 import { join, extname } from 'path'
 import childProcess from 'child_process'
 import Throttle from 'throttle'
@@ -20,7 +20,7 @@ const {
 } = config
 
 export class Service {
-  readonly clientStreams: Map<any, any>
+  readonly clientStreams: Map<string, PassThrough>
   readonly currentSong: string
   currentBitRate: number
   throttleTransform: Throttle
@@ -107,7 +107,7 @@ export class Service {
     })
   }
 
-  async startStreamming (): Promise<any> {
+  async startStreamming (): Promise<PipelinePromise<any>> {
     logger.info(`starting with ${this.currentSong}`)
     const bitRate = this.currentBitRate = parseFloat(await this.getBitRate(this.currentSong)) / bitRateDivisor
     const throttleTransform = this.throttleTransform = new Throttle(bitRate)
@@ -117,6 +117,10 @@ export class Service {
       throttleTransform,
       this.broadCast()
     )
+  }
+
+  stopStreamming (): void {
+    this.throttleTransform?.end?.()
   }
 
   async getFileInfo (file: string): Promise<{type: string, name: string}> {

@@ -5,6 +5,7 @@ import { logger } from './util'
 
 import { IncomingMessage, ServerResponse } from 'http'
 import { ReadStream } from 'fs'
+import { once } from 'events'
 
 const {
   location,
@@ -63,6 +64,13 @@ async function routes (request: IncomingMessage, response: ServerResponse): Prom
     })
 
     return stream.pipe(response)
+  }
+
+  if (method === 'POST' && url === '/controller') {
+    const data = await once(request, 'data') as unknown as string
+    const item = JSON.parse(data)
+    const result = await controller.handleCommand(item)
+    return response.end(JSON.stringify(result))
   }
 
   // files
