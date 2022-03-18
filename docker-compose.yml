@@ -14,6 +14,7 @@ services:
       - node_modules:/spotify-radio/node_modules
     ports:
       - 3000:3000
+      - 9229:9229
 
 volumes:
   node_modules: {}
