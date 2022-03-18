@@ -13,7 +13,7 @@
     "test": "LOG_DISABLE=true jest --no-cache",
     "test:watch": "npm t -- --watchAll",
     "test:coverage": "npm t -- --coverage tests/unit",
-    "dev:docker": "docker-compose up dev"
+    "dev:docker": "docker-compose up --build dev"
   },
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
     "@types/jest": "^27.0.1",
     "@types/module-alias": "^2.0.1",
     "@types/node": "^17.0.10",
+    "@types/throttle": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "babel-plugin-module-resolver": "^4.1.0",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",

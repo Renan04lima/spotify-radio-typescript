@@ -1,25 +1,37 @@
 import config from './config'
+import { logger } from './util'
 
 import { createReadStream, ReadStream } from 'fs'
 import fsPromises from 'fs/promises'
 import { randomUUID } from 'crypto'
-import { PassThrough } from 'stream'
+import { PassThrough, Writable } from 'stream'
 import { join, extname } from 'path'
 import childProcess from 'child_process'
-import { logger } from './util'
-
+import Throttle from 'throttle'
+import streamsPromises from 'stream/promises'
+import { once } from 'events'
 const {
   dir: {
     publicDirectory
   },
-  fallbackBitRate
+  englishConversation,
+  fallbackBitRate,
+  bitRateDivisor
 } = config
 
 export class Service {
-  clientStreams: Map<any, any>
+  readonly clientStreams: Map<any, any>
+  readonly currentSong: string
+  currentBitRate: number
+  throttleTransform: Throttle
+  currentReadable: ReadStream
 
   constructor () {
     this.clientStreams = new Map()
+    this.currentSong = englishConversation
+    this.currentBitRate = 0
+    this.throttleTransform = {} as unknown as Throttle
+    this.currentReadable = {} as unknown as ReadStream
   }
 
   createClientStream (): {id: string, clientStream: PassThrough} {
@@ -58,6 +70,11 @@ export class Service {
         // stdin // enviar dados como stream
       } = this._executeSoxCommand(args)
 
+      await Promise.all([
+        once(stderr, 'readable'),
+        once(stdout, 'readable')
+      ])
+
       const [success, error] = [stdout, stderr].map(stream => stream.read())
       if (error != null) return await Promise.reject(error)
       return success
@@ -70,6 +87,36 @@ export class Service {
 
       return fallbackBitRate
     }
+  }
+
+  broadCast (): Writable {
+    return new Writable({
+      write: (chunk, enc, cb) => {
+        for (const [id, stream] of this.clientStreams) {
+          // se o cliente descontou não devemos mais mandar dados pra ele
+          if (stream.writableEnded != null) {
+            this.clientStreams.delete(id)
+            continue
+          }
+
+          stream.write(chunk)
+        }
+
+        cb()
+      }
+    })
+  }
+
+  async startStreamming (): Promise<any> {
+    logger.info(`starting with ${this.currentSong}`)
+    const bitRate = this.currentBitRate = parseFloat(await this.getBitRate(this.currentSong)) / bitRateDivisor
+    const throttleTransform = this.throttleTransform = new Throttle(bitRate)
+    const songReadable = this.currentReadable = this.createFileStream(this.currentSong)
+    return streamsPromises.pipeline(
+      songReadable,
+      throttleTransform,
+      this.broadCast()
+    )
   }
 
   async getFileInfo (file: string): Promise<{type: string, name: string}> {
