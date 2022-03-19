@@ -20,8 +20,8 @@ const {
 } = config
 
 export class Service {
-  readonly clientStreams: Map<string, PassThrough>
-  readonly currentSong: string
+  clientStreams: Map<string, PassThrough>
+  currentSong: string
   currentBitRate: number
   throttleTransform: Throttle
   currentReadable: ReadStream
@@ -92,12 +92,11 @@ export class Service {
   broadCast (): Writable {
     return new Writable({
       write: (chunk, enc, cb) => {
-        for (const [id, stream] of this.clientStreams) {
-          // se o cliente descontou não devemos mais mandar dados pra ele
-          if (stream.writableEnded != null) {
-            this.clientStreams.delete(id)
-            continue
-          }
+        for (const [, stream] of this.clientStreams) {
+          // if (stream.writableEnded != null) { // se o cliente desconectou não devemos mais mandar dados pra ele
+          //   this.clientStreams.delete(id)
+          //   continue
+          // }
 
           stream.write(chunk)
         }
@@ -112,6 +111,7 @@ export class Service {
     const bitRate = this.currentBitRate = parseFloat(await this.getBitRate(this.currentSong)) / bitRateDivisor
     const throttleTransform = this.throttleTransform = new Throttle(bitRate)
     const songReadable = this.currentReadable = this.createFileStream(this.currentSong)
+
     return streamsPromises.pipeline(
       songReadable,
       throttleTransform,
