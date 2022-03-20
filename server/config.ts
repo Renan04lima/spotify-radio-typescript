@@ -26,12 +26,13 @@ type Config = {
     CONTENT_TYPE: {
       [key: string]: string
     }
+    audioMediaType: string
+    songVolume: string
+    fxVolume: string
+    fallbackBitRate: string
+    bitRateDivisor: number
+    englishConversation: string
   }
-  audioMediaType: string
-  songVolume: string
-  fallbackBitRate: string
-  bitRateDivisor: number
-  englishConversation: string
 }
 
 const config: Config = {
@@ -55,13 +56,14 @@ const config: Config = {
       '.html': 'text/html',
       '.css': 'text/css',
       '.js': 'text/javascript'
-    }
-  },
-  audioMediaType: 'mp3',
-  songVolume: '0.99',
-  fallbackBitRate: '128000',
-  bitRateDivisor: 8,
-  englishConversation: join(songsDirectory, 'conversation.mp3')
+    },
+    audioMediaType: 'mp3',
+    songVolume: '0.99',
+    fxVolume: '0.1',
+    fallbackBitRate: '128000',
+    bitRateDivisor: 8,
+    englishConversation: join(songsDirectory, 'conversation.mp3')
+  }
 }
 
 export default config

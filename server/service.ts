@@ -15,9 +15,14 @@ const {
     publicDirectory,
     fxDirectory
   },
-  englishConversation,
-  fallbackBitRate,
-  bitRateDivisor
+  constants: {
+    fallbackBitRate,
+    englishConversation,
+    bitRateDivisor,
+    audioMediaType,
+    songVolume,
+    fxVolume
+  }
 } = config
 
 export class Service {
@@ -155,5 +160,59 @@ export class Service {
     if (chosenSong == null) return Promise.reject(new Error(`the song ${fxName} wasn't found!`))
 
     return join(fxDirectory, chosenSong)
+  }
+
+  appendFxStream (fx: string): void {
+    const throttleTransformable = new Throttle(this.currentBitRate)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    streamsPromises.pipeline(
+      throttleTransformable,
+      this.broadCast()
+    ) // avisa o client que vai chegar uma nova transmissão
+
+    /**
+     * faz o unlink, remoção do objeto
+     * @returns void
+     */
+    const unpipe = (): void => {
+      const transformStream = this.mergeAudioStreams(fx, this.currentReadable)
+
+      this.throttleTransform = throttleTransformable
+      this.currentReadable = transformStream
+      this.currentReadable.removeListener('unpipe', unpipe) // evita vazamento de memória
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      streamsPromises.pipeline(
+        transformStream,
+        throttleTransformable
+      )
+    }
+    this.throttleTransform.on('unpipe', unpipe)
+    this.throttleTransform.pause() // pausa a stream para pode manipular ela
+    this.currentReadable.unpipe(this.throttleTransform)
+  }
+
+  mergeAudioStreams (song: string, readable: ReadStream): ReadStream {
+    // @ts-expect-error
+    const transformStream = PassThrough()
+    const args = [
+      '-t', audioMediaType,
+      '-v', songVolume,
+      // '-m' => merge -> o '-' é para receber como stream
+      '-m', '-',
+      '-t', audioMediaType,
+      '-v', fxVolume,
+      song,
+      '-t', audioMediaType,
+      // '-' => saida no formato stream
+      '-'
+    ]
+
+    const {
+      stdout,
+      stdin
+    } = this._executeSoxCommand(args)
+
+    return transformStream
   }
 }
