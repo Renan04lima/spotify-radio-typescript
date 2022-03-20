@@ -42,6 +42,11 @@ describe('#Controller', () => {
       expect(result).toEqual({ result: 'ok' })
       expect(stopStreammingSpy).toHaveBeenCalledTimes(1)
     })
+
+    test('should return result "command invalid" if command not exists', async () => {
+      const result = await sut.handleCommand({ command: 'invalid' })
+      expect(result).toEqual({ result: 'command invalid' })
+    })
   })
 
   describe('createClientStream()', () => {
