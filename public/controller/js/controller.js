@@ -11,7 +11,12 @@ export default class Controller {
     return controller
   }
 
+  async commandReceived(text) {
+    console.log('click');
+  }
+
   onLoad() {
+    this.view.configureOnBtnClick(this.commandReceived.bind(this))
     this.view.onLoad()
   }
 }
