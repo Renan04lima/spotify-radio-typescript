@@ -121,49 +121,6 @@ describe('#Routes - test suite for API response', () => {
     expect(response.end).toHaveBeenCalled()
   })
 
-  test('GET any_path/file.html - should respond with file stream', async () => {
-    const { request, response } = TestUtil.defaultHandleParams()
-    const filename = '/file.html'
-    request.method = 'GET'
-    request.url = filename
-    request.headers.referer = 'http://any_url.com/any_path'
-
-    jest.spyOn(mockFileStream, 'pipe')
-
-    await handler(request, response)
-    expect(Controller.prototype.getFileStream).toHaveBeenCalledWith('any_path' + filename)
-    expect(mockFileStream.pipe).toHaveBeenCalledWith(response)
-    expect(response.writeHead).not.toHaveBeenCalled()
-  })
-
-  test('GET /file.html - given a referer without path, it should respond with 400', async () => {
-    const { request, response } = TestUtil.defaultHandleParams()
-    const filename = '/file.html'
-    request.method = 'GET'
-    request.url = filename
-    request.headers.referer = 'http://any_url.com'
-
-    jest.spyOn(mockFileStream, 'pipe')
-
-    await handler(request, response)
-    expect(response.writeHead).toHaveBeenCalledWith(400)
-    expect(response.end).toHaveBeenCalled()
-  })
-
-  test('GET  /file.html - given an invalid_referer, it should respond with 400', async () => {
-    const { request, response } = TestUtil.defaultHandleParams()
-    const filename = '/file.html'
-    request.method = 'GET'
-    request.url = filename
-    request.headers.referer = 'invalid_referer'
-
-    jest.spyOn(mockFileStream, 'pipe')
-
-    await handler(request, response)
-    expect(response.writeHead).toHaveBeenCalledWith(400)
-    expect(response.end).toHaveBeenCalled()
-  })
-
   describe('exceptions', () => {
     test('given an inexistent file it should respond with 404', async () => {
       const { request, response } = TestUtil.defaultHandleParams()
