@@ -28,4 +28,18 @@ describe('#Controller', () => {
       })
     })
   })
+
+  describe('handleCommand()', () => {
+    test('should call service.startStreamming if command is "start"', async () => {
+      const startStreammingSpy = jest.spyOn(Service.prototype, 'startStreamming')
+      const result = await sut.handleCommand({ command: 'start' })
+      expect(result).toEqual({ result: 'ok' })
+      expect(startStreammingSpy).toHaveBeenCalledTimes(1)
+    })
+    test.todo('should call service.stopStreamming if command is "stop"')
+  })
+
+  describe('createClientStream()', () => {
+    test.todo('should return stream and onClose on success')
+  })
 })
