@@ -1,4 +1,5 @@
 import { ReadStream } from 'fs'
+import { PassThrough } from 'stream'
 import { Controller } from '../../../server/controller'
 import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
@@ -50,6 +51,17 @@ describe('#Controller', () => {
   })
 
   describe('createClientStream()', () => {
-    test.todo('should return stream and onClose on success')
+    test('should return stream and onClose on success', () => {
+      const clientStream = new PassThrough()
+      const createClientStreamSpy = jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
+        id: 'any_id',
+        clientStream
+      })
+      const result = sut.createClientStream()
+
+      expect(result.stream).toEqual(clientStream)
+      expect(result.onClose).toBeInstanceOf(Function)
+      expect(createClientStreamSpy).toHaveBeenCalledTimes(1)
+    })
   })
 })
