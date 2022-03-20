@@ -63,5 +63,18 @@ describe('#Controller', () => {
       expect(result.onClose).toBeInstanceOf(Function)
       expect(createClientStreamSpy).toHaveBeenCalledTimes(1)
     })
+
+    test('should call service.removeClientStream if onClose is called', () => {
+      const clientStream = new PassThrough()
+      jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
+        id: 'any_id',
+        clientStream
+      })
+      const removeClientStreamSpy = jest.spyOn(Service.prototype, 'removeClientStream').mockReturnValue()
+      const { onClose } = sut.createClientStream()
+      onClose()
+
+      expect(removeClientStreamSpy).toHaveBeenCalledWith('any_id')
+    })
   })
 })
