@@ -20,9 +20,6 @@ const defaultConfig = {
   transformIgnorePatterns: [
     'node_modules'
   ],
-  transform: {
-    '.+\\.ts$': 'ts-jest'
-  },
   clearMocks: true
 }
 
@@ -42,7 +39,10 @@ module.exports = {
       ],
       testMatch: [
         '**/tests/**/server/**/*.test.ts'
-      ]
+      ],
+      transform: {
+        '.+\\.ts$': 'ts-jest'
+      }
     },
     {
       ...defaultConfig,
@@ -56,7 +56,7 @@ module.exports = {
         'server'
       ],
       testMatch: [
-        '**/tests/**/public/**/*.test.ts'
+        '**/tests/**/public/**/*.test.js'
       ]
     }
   ]
