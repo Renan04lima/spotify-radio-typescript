@@ -213,6 +213,21 @@ export class Service {
       stdin
     } = this._executeSoxCommand(args)
 
+    // plugamos a stream de conversacao na entrada de dados do terminal
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    streamsPromises.pipeline(
+      readable,
+      stdin
+    )
+    // .catch(error => logger.error(`error on sending stream to sox: ${error}`))
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    streamsPromises.pipeline(
+      stdout,
+      transformStream
+    )
+    // .catch(error => logger.error(`error on receiving stream from sox: ${error}`))
+
     return transformStream
   }
 }
