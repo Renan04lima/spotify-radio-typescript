@@ -62,7 +62,7 @@ describe('#Controller', () => {
     let mockId: string
 
     beforeAll(() => {
-      const mockId = 'any_id'
+      mockId = 'any_id'
       clientStream = new PassThrough()
       createClientStreamSpy = jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
         id: mockId,
@@ -82,7 +82,6 @@ describe('#Controller', () => {
       const removeClientStreamSpy = jest.spyOn(Service.prototype, 'removeClientStream').mockReturnValue()
       const { onClose } = sut.createClientStream()
       onClose()
-
       expect(removeClientStreamSpy).toHaveBeenCalledWith(mockId)
     })
   })
