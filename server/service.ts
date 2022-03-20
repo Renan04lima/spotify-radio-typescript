@@ -168,7 +168,7 @@ export class Service {
     streamsPromises.pipeline(
       throttleTransformable,
       this.broadCast()
-    ) // avisa o client que vai chegar uma nova transmissão
+    ) // avisa o client toda vez que chegar informação(aúdio) nova
 
     /**
      * faz o unlink, remoção do objeto

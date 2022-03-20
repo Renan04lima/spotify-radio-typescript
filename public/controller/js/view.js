@@ -66,7 +66,6 @@ export default class View {
     } = btn
 
     this.toggleDisableCommandBtn(classList)
-    debugger
     await this.onBtnClick(innerText)
     setTimeout(
       () => this.toggleDisableCommandBtn(classList),
