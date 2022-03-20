@@ -12,7 +12,9 @@ export default class Controller {
   }
 
   async commandReceived(text) {
-    console.log('click');
+    return this.service.makeRequest({
+      command: text.toLowerCase()
+    })
   }
 
   onLoad() {
