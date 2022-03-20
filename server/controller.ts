@@ -28,11 +28,11 @@ export class Controller {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.service.startStreamming()
       return result
-    }
-
-    if (cmd.includes('stop')) {
+    } else if (cmd.includes('stop')) {
       this.service.stopStreamming()
       return result
+    } else {
+      return { result: 'command invalid' }
     }
   }
 
