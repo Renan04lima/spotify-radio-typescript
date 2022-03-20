@@ -7,6 +7,8 @@ export default class View {
     this.ignoreButtons = new Set(['unassigned'])
     async function onBtnClick() { }
     this.onBtnClick = onBtnClick
+
+    this.DISABLE_BTN_TIMEOUT = 500
   }
 
   onLoad() {
@@ -53,6 +55,32 @@ export default class View {
     }
 
     btn.onclick = this.onCommandClick.bind(this)
+  }
+
+  async onCommandClick(btn) {
+    const {
+      srcElement: {
+        classList,
+        innerText
+      }
+    } = btn
+
+    this.toggleDisableCommandBtn(classList)
+    debugger
+    await this.onBtnClick(innerText)
+    setTimeout(
+      () => this.toggleDisableCommandBtn(classList),
+      this.DISABLE_BTN_TIMEOUT
+    )
+  }
+
+  toggleDisableCommandBtn(classList) {
+    if (!classList.contains('active')) {
+      classList.add('active')
+      return
+    }
+
+    classList.remove('active')
   }
 
   onStopBtn({
