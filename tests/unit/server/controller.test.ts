@@ -10,6 +10,9 @@ describe('#Controller', () => {
 
   beforeAll(() => {
     mockReadableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
+  })
+
+  beforeEach(() => {
     sut = new Controller()
   })
 
@@ -51,12 +54,23 @@ describe('#Controller', () => {
   })
 
   describe('createClientStream()', () => {
-    test('should return stream and onClose on success', () => {
-      const clientStream = new PassThrough()
-      const createClientStreamSpy = jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
-        id: 'any_id',
+    let createClientStreamSpy: jest.SpyInstance<{
+      id: string
+      clientStream: PassThrough
+    }, []>
+    let clientStream: PassThrough
+    let mockId: string
+
+    beforeAll(() => {
+      const mockId = 'any_id'
+      clientStream = new PassThrough()
+      createClientStreamSpy = jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
+        id: mockId,
         clientStream
       })
+    })
+
+    test('should return stream and onClose on success', () => {
       const result = sut.createClientStream()
 
       expect(result.stream).toEqual(clientStream)
@@ -65,16 +79,11 @@ describe('#Controller', () => {
     })
 
     test('should call service.removeClientStream if onClose is called', () => {
-      const clientStream = new PassThrough()
-      jest.spyOn(Service.prototype, 'createClientStream').mockReturnValue({
-        id: 'any_id',
-        clientStream
-      })
       const removeClientStreamSpy = jest.spyOn(Service.prototype, 'removeClientStream').mockReturnValue()
       const { onClose } = sut.createClientStream()
       onClose()
 
-      expect(removeClientStreamSpy).toHaveBeenCalledWith('any_id')
+      expect(removeClientStreamSpy).toHaveBeenCalledWith(mockId)
     })
   })
 })
