@@ -12,7 +12,8 @@ import streamsPromises from 'stream/promises'
 import { once } from 'events'
 const {
   dir: {
-    publicDirectory
+    publicDirectory,
+    fxDirectory
   },
   englishConversation,
   fallbackBitRate,
@@ -146,5 +147,13 @@ export class Service {
       stream: this.createFileStream(name),
       type
     }
+  }
+
+  async readFxByName (fxName: string): Promise<string> {
+    const songs = await fsPromises.readdir(fxDirectory)
+    const chosenSong = songs.find(filename => filename.toLowerCase().includes(fxName))
+    if (chosenSong == null) return Promise.reject(new Error(`the song ${fxName} wasn't found!`))
+
+    return join(fxDirectory, chosenSong)
   }
 }

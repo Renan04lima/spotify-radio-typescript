@@ -28,12 +28,16 @@ export class Controller {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.service.startStreamming()
       return result
-    } else if (cmd.includes('stop')) {
+    }
+    if (cmd.includes('stop')) {
       this.service.stopStreamming()
       return result
-    } else {
-      return { result: 'command invalid' }
     }
+
+    const chosenFx = await this.service.readFxByName(cmd)
+    logger.info(`added fx to service: ${chosenFx}`)
+
+    return result
   }
 
   createClientStream (): {stream: PassThrough, onClose: () => void} {
