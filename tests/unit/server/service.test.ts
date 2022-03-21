@@ -1,17 +1,19 @@
 import config from '../../../server/config'
-import fs, { ReadStream } from 'fs'
+import fs, { Dirent, ReadStream } from 'fs'
 import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
 import fsPromises from 'fs/promises'
 import childProcess from 'child_process'
-import { PassThrough, Readable, Writable } from 'stream'
+import { PassThrough, Writable } from 'stream'
 import streamsPromises from 'stream/promises'
 
 jest.mock('fs')
+jest.mock('fs/promises')
 jest.mock('child_process')
 const {
   dir: {
-    publicDirectory
+    publicDirectory,
+    fxDirectory
   },
   constants: {
     fallbackBitRate,
@@ -214,6 +216,25 @@ describe('#Service', () => {
         sut.throttleTransform,
         sut.broadCast()
       )
+    })
+  })
+
+  describe('readFxByName', () => {
+    test('it should return the song', async () => {
+      const service = new Service()
+      const inputFx = 'song01'
+      const fxOnDisk = 'SONG01.mp3'
+      const fxOnDiskDirent = 'SONG01.mp3' as unknown as Dirent
+      jest.spyOn(
+        fsPromises,
+        'readdir'
+      ).mockResolvedValue([fxOnDiskDirent])
+
+      const path = await service.readFxByName(inputFx)
+      const expectedPath = `${fxDirectory}/${fxOnDisk}`
+
+      expect(path).toStrictEqual(expectedPath)
+      expect(fsPromises.readdir).toHaveBeenCalledWith(fxDirectory)
     })
   })
 })
