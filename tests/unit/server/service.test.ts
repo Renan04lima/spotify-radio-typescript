@@ -114,5 +114,17 @@ describe('#Service', () => {
         'any_song'
       ])
     })
+
+    test('should return correct bit rate', async () => {
+      const spawnResponse = getSpawnResponse({
+        stdout: '  1k  '
+      }) as childProcess.ChildProcessWithoutNullStreams
+      jest.spyOn(
+        sut,
+        '_executeSoxCommand'
+      ).mockReturnValueOnce(spawnResponse)
+      const result = await sut.getBitRate('mockSong')
+      expect(result).toBe('1000')
+    })
   })
 })
