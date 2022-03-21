@@ -10,6 +10,9 @@ jest.mock('child_process')
 const {
   dir: {
     publicDirectory
+  },
+  constants: {
+    fallbackBitRate
   }
 } = config
 
@@ -125,6 +128,21 @@ describe('#Service', () => {
       ).mockReturnValueOnce(spawnResponse)
       const result = await sut.getBitRate('mockSong')
       expect(result).toBe('1000')
+    })
+
+    test('should return fallbackBitRate if sox command failed', async () => {
+      const mockSong = 'any_song'
+      const spawnResponse = getSpawnResponse({
+        stdout: '  1k  ',
+        stderr: 'any_error'
+      }) as childProcess.ChildProcessWithoutNullStreams
+      const spawnSpy = jest.spyOn(
+        sut,
+        '_executeSoxCommand'
+      ).mockReturnValueOnce(spawnResponse)
+      const result = await sut.getBitRate(mockSong)
+      expect(result).toStrictEqual(fallbackBitRate)
+      expect(spawnSpy).toHaveBeenCalledWith(['--i', '-B', 'any_song'])
     })
   })
 })
