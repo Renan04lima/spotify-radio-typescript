@@ -26,6 +26,11 @@ describe('API E2E Suite Test', () => {
     result: 'ok'
   })
   const possibleCommands = {
+    applause: 'applause',
+    audience: 'audience',
+    boo: 'boo',
+    fart: 'fart',
+    laugh: 'laugh',
     start: 'start',
     stop: 'stop'
   }
@@ -197,6 +202,23 @@ describe('API E2E Suite Test', () => {
       expect(onChunk.mock.calls.length).toBeGreaterThan(atLeastCallCount)
       expect(buffer).toBeInstanceOf(Buffer)
       expect(buffer.length).toBeGreaterThan(1000)
+
+      server.kill()
+    })
+
+    test('it shouldnt break sending commands to the API if theres no audio playing', async () => {
+      const server = await getTestServer()
+      const sender = commandSender(server.testServer)
+
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      await setTimeout(RETENTION_DATA_PERIOD)
+
+      await sender.send(possibleCommands.stop)
+      await sender.send(possibleCommands.applause)
+      await sender.send(possibleCommands.stop)
+
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      await setTimeout(RETENTION_DATA_PERIOD)
 
       server.kill()
     })
