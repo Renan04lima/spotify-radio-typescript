@@ -3,9 +3,10 @@ import fs, { ReadStream } from 'fs'
 import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
 import fsPromises from 'fs/promises'
-import { PassThrough } from 'stream'
+import childProcess from 'child_process'
 
 jest.mock('fs')
+jest.mock('child_process')
 const {
   dir: {
     publicDirectory
@@ -15,10 +16,22 @@ const {
 describe('#Service', () => {
   let sut: Service
   let mockReadableStream: ReadStream
+  let mockSpawnResponse: childProcess.ChildProcessWithoutNullStreams
+  const getSpawnResponse = ({
+    stdout = '',
+    stderr = '',
+    stdin = () => {}
+  }) => ({
+    stdout: TestUtil.generateReadableStream([stdout]),
+    stderr: TestUtil.generateReadableStream([stderr]),
+    stdin: TestUtil.generateWritableStream(stdin)
+  })
   beforeAll(() => {
+    mockSpawnResponse = getSpawnResponse({}) as childProcess.ChildProcessWithoutNullStreams
     mockReadableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
     jest.spyOn(fs, 'createReadStream').mockReturnValue(mockReadableStream)
     jest.spyOn(fsPromises, 'access').mockResolvedValue()
+    jest.spyOn(childProcess, 'spawn').mockReturnValue(mockSpawnResponse)
   })
 
   beforeEach(() => {
@@ -78,6 +91,13 @@ describe('#Service', () => {
         stream: mockReadableStream,
         type: '.txt'
       })
+    })
+  })
+
+  describe('_executeSoxCommand()', () => {
+    test('should call sox command', () => {
+      const result = sut._executeSoxCommand('song_name')
+      expect(result).toEqual(mockSpawnResponse)
     })
   })
 })
