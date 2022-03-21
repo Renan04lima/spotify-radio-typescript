@@ -70,6 +70,23 @@ describe('#Controller', () => {
       expect(Service.prototype.readFxByName).toHaveBeenCalledWith(data.command.toLowerCase())
       expect(Service.prototype.appendFxStream).toHaveBeenCalledWith(fxName)
     })
+
+    test('should rethrow if readFxByName throws', async () => {
+      const error = new Error('')
+      jest.spyOn(
+        Service.prototype,
+        'readFxByName'
+      ).mockRejectedValueOnce(error)
+
+      const data = {
+        command: 'MY_FX_NAME'
+      }
+
+      const promise = sut.handleCommand(data)
+      await expect(promise).rejects.toEqual(error)
+      expect(Service.prototype.readFxByName).toHaveBeenCalledWith(data.command.toLowerCase())
+      expect(Service.prototype.appendFxStream).not.toHaveBeenCalled()
+    })
   })
 
   describe('createClientStream()', () => {
