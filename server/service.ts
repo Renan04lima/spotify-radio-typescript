@@ -99,6 +99,7 @@ export class Service {
     return new Writable({
       write: (chunk, enc, cb) => {
         for (const [, stream] of this.clientStreams) {
+          // BUG Error: write after end
           // if (stream.writableEnded != null) { // se o cliente desconectou não devemos mais mandar dados pra ele
           //   this.clientStreams.delete(id)
           //   continue

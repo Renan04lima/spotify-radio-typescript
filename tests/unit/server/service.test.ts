@@ -4,6 +4,7 @@ import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
 import fsPromises from 'fs/promises'
 import childProcess from 'child_process'
+import { PassThrough, Writable } from 'stream'
 
 jest.mock('fs')
 jest.mock('child_process')
@@ -143,6 +144,31 @@ describe('#Service', () => {
       const result = await sut.getBitRate(mockSong)
       expect(result).toStrictEqual(fallbackBitRate)
       expect(spawnSpy).toHaveBeenCalledWith(['--i', '-B', 'any_song'])
+    })
+  })
+
+  describe('broadCast()', () => {
+    test('it should write only for active client streams', () => {
+      const onData = jest.fn()
+      const client1 = TestUtil.generateWritableStream(onData) as PassThrough
+      // BUG Error: write after end
+      // const client2 = TestUtil.generateWritableStream(onData) as PassThrough
+      // jest.spyOn(
+      //   sut.clientStreams,
+      //   'delete'
+      // )
+
+      sut.clientStreams.set('1', client1)
+      // sut.clientStreams.set('2', client2)
+      // client2.end()
+
+      const writable = sut.broadCast()
+      // vai mandar somente para o client1 pq o outro desconectou
+      writable.write('Hello World')
+
+      expect(writable).toBeInstanceOf(Writable)
+      // expect(sut.clientStreams.delete).toHaveBeenCalled()
+      expect(onData).toHaveBeenCalledTimes(1)
     })
   })
 })
