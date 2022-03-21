@@ -26,12 +26,14 @@ describe('#Service', () => {
     stderr: TestUtil.generateReadableStream([stderr]),
     stdin: TestUtil.generateWritableStream(stdin)
   })
+  let spawnSpy: jest.SpyInstance
+
   beforeAll(() => {
     mockSpawnResponse = getSpawnResponse({}) as childProcess.ChildProcessWithoutNullStreams
     mockReadableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
     jest.spyOn(fs, 'createReadStream').mockReturnValue(mockReadableStream)
     jest.spyOn(fsPromises, 'access').mockResolvedValue()
-    jest.spyOn(childProcess, 'spawn').mockReturnValue(mockSpawnResponse)
+    spawnSpy = jest.spyOn(childProcess, 'spawn').mockReturnValue(mockSpawnResponse)
   })
 
   beforeEach(() => {
@@ -98,6 +100,19 @@ describe('#Service', () => {
     test('should call sox command', () => {
       const result = sut._executeSoxCommand('song_name')
       expect(result).toEqual(mockSpawnResponse)
+    })
+  })
+
+  describe('getBitRate()', () => {
+    test('should call sox with correct args', async () => {
+      const mockSong = 'any_song'
+      await sut.getBitRate(mockSong)
+
+      expect(spawnSpy).toHaveBeenCalledWith('sox', [
+        '--i',
+        '-B',
+        'any_song'
+      ])
     })
   })
 })
