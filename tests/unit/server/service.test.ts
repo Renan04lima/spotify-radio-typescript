@@ -319,4 +319,40 @@ describe('#Service', () => {
       expect(sut.currentReadable.removeListener).toHaveBeenCalled()
     })
   })
+
+  describe('mergeAudioStreams', () => {
+    test('should work correctly', async () => {
+      const currentFx = 'fx.mp3'
+      const service = new Service()
+      const currentReadable = TestUtil.generateReadableStream(['abc']) as ReadStream
+      const spawnResponse = getSpawnResponse({
+        stdout: '1k',
+        stdin: () => {}
+      }) as childProcess.ChildProcessWithoutNullStreams
+
+      jest.spyOn(
+        service,
+        '_executeSoxCommand'
+      ).mockReturnValue(spawnResponse)
+
+      const pipelineSpy = jest.spyOn(
+        streamsPromises,
+        'pipeline'
+      ).mockResolvedValue()
+
+      const result = service.mergeAudioStreams(currentFx, currentReadable)
+
+      const [call1, call2] = pipelineSpy.mock.calls
+
+      const [readableCall, stdinCall] = call1
+      expect(readableCall).toStrictEqual(currentReadable)
+      expect(stdinCall).toStrictEqual(spawnResponse.stdin)
+
+      const [stdoutCall, transformStream] = call2
+      expect(stdoutCall).toStrictEqual(spawnResponse.stdout)
+      expect(transformStream).toBeInstanceOf(PassThrough)
+
+      expect(result).toBeInstanceOf(PassThrough)
+    })
+  })
 })
