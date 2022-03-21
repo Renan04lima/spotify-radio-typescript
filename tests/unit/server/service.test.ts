@@ -219,7 +219,7 @@ describe('#Service', () => {
     })
   })
 
-  describe('readFxByName', () => {
+  describe('readFxByName()', () => {
     test('it should return the song', async () => {
       const service = new Service()
       const inputFx = 'song01'
@@ -234,6 +234,17 @@ describe('#Service', () => {
       const expectedPath = `${fxDirectory}/${fxOnDisk}`
 
       expect(path).toStrictEqual(expectedPath)
+      expect(fsPromises.readdir).toHaveBeenCalledWith(fxDirectory)
+    })
+
+    test('it should reject when song wasnt found', async () => {
+      const inputFx = 'song01'
+      jest.spyOn(
+        fsPromises,
+        'readdir'
+      ).mockResolvedValue([])
+
+      await expect(sut.readFxByName(inputFx)).rejects.toEqual(new Error(`the song ${inputFx} wasn't found!`))
       expect(fsPromises.readdir).toHaveBeenCalledWith(fxDirectory)
     })
   })
