@@ -29,10 +29,10 @@ describe('API E2E Suite Test', () => {
   }
   describe('client workflow', () => {
     async function getTestServer (): Promise<{ testServer: SuperTest<Test>, kill: () => void }> {
-      const getSupertTest = (port: number): SuperTest<Test> => superTest(`http://localhost:${port}`)
+      const getSupertTest = (port: number) => superTest(`http://localhost:${port}`)
       const port = await getAvailablePort()
       return new Promise((resolve, reject) => {
-        const server = Server.listen(port)
+        const server = Server().listen(port)
           .once('listening', () => {
             const testServer = getSupertTest(port)
             const response = {
