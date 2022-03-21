@@ -14,5 +14,3 @@ RUN npm ci --silent
 COPY . .
 
 USER node
-
-CMD npm run dev
