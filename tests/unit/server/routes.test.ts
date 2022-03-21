@@ -1,4 +1,5 @@
 import { ReadStream } from 'fs'
+import { PassThrough } from 'stream'
 import config from '../../../server/config'
 import { Controller } from '../../../server/controller'
 import { handler } from '../../../server/routes'
@@ -119,6 +120,42 @@ describe('#Routes - test suite for API response', () => {
 
     expect(response.writeHead).toHaveBeenCalledWith(400)
     expect(response.end).toHaveBeenCalled()
+  })
+
+  test('GET /stream?id=123 - should call createClientStream', async () => {
+    const { request, response } = TestUtil.defaultHandleParams()
+
+    request.method = 'GET'
+    request.url = '/stream'
+    const stream = TestUtil.generateReadableStream(['test']) as PassThrough
+    jest.spyOn(
+      stream,
+      'pipe'
+    )
+
+    const onClose = jest.fn()
+    jest.spyOn(
+      Controller.prototype,
+      'createClientStream'
+    )
+      .mockReturnValue({
+        onClose,
+        stream
+      })
+
+    await handler(request, response)
+    request.emit('close')
+
+    expect(response.writeHead).toHaveBeenCalledWith(
+      200, {
+        'Content-Type': 'audio/mpeg',
+        'Accept-Ranges': 'bytes'
+      }
+    )
+
+    expect(Controller.prototype.createClientStream).toHaveBeenCalled()
+    expect(stream.pipe).toHaveBeenCalledWith(response)
+    expect(onClose).toHaveBeenCalled()
   })
 
   describe('exceptions', () => {
