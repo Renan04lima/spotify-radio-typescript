@@ -15,7 +15,8 @@ const {
     publicDirectory
   },
   pages: {
-    homeHTML
+    homeHTML,
+    controllerHTML
   }
 } = config
 
@@ -54,6 +55,12 @@ describe('API E2E Suite Test', () => {
   test('GET /home - it should respond with file stream', async () => {
     const response = await testServer.get('/home')
     const homePage = await fs.promises.readFile(`${publicDirectory}/${homeHTML}`)
+    expect(response.text).toStrictEqual(homePage.toString())
+  })
+
+  test('GET /controller - it should respond with file stream', async () => {
+    const response = await testServer.get('/controller')
+    const homePage = await fs.promises.readFile(`${publicDirectory}/${controllerHTML}`)
     expect(response.text).toStrictEqual(homePage.toString())
   })
 
