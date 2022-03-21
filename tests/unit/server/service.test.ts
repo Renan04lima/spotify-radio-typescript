@@ -3,6 +3,7 @@ import fs, { ReadStream } from 'fs'
 import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
 import fsPromises from 'fs/promises'
+import { PassThrough } from 'stream'
 
 jest.mock('fs')
 const {
@@ -16,9 +17,21 @@ describe('#Service', () => {
   let mockReadableStream: ReadStream
   beforeAll(() => {
     mockReadableStream = TestUtil.generateReadableStream(['any_data']) as ReadStream
-    sut = new Service()
     jest.spyOn(fs, 'createReadStream').mockReturnValue(mockReadableStream)
     jest.spyOn(fsPromises, 'access').mockResolvedValue()
+  })
+
+  beforeEach(() => {
+    sut = new Service()
+  })
+
+  describe('createClientStream() and removeClientStream()', () => {
+    test('should create and remove clientStream', async () => {
+      const { id } = sut.createClientStream()
+      expect(sut.clientStreams.size).toBe(1)
+      sut.removeClientStream(id)
+      expect(sut.clientStreams.size).toBe(0)
+    })
   })
 
   describe('createFileStream()', () => {
