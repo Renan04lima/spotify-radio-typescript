@@ -167,5 +167,38 @@ describe('API E2E Suite Test', () => {
 
       server.kill()
     })
+
+    test('sending all commands at once together should not break the API', async () => {
+      const server = await getTestServer()
+      const sender = commandSender(server.testServer)
+      await sender.send(possibleCommands.start)
+
+      const onChunk = jest.fn()
+      pipeAndReadStreamData(
+        server.testServer.get('/stream'),
+        onChunk
+      )
+      const commands = Reflect.ownKeys(possibleCommands)
+        .filter(cmd => cmd !== possibleCommands.start || cmd !== possibleCommands.stop)
+
+      for (const command of commands) {
+        await sender.send(command as string)
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        await setTimeout(RETENTION_DATA_PERIOD)
+      }
+
+      await sender.send(possibleCommands.stop)
+
+      const [
+        [buffer]
+      ] = onChunk.mock.calls
+
+      const atLeastCallCount = 5
+      expect(onChunk.mock.calls.length).toBeGreaterThan(atLeastCallCount)
+      expect(buffer).toBeInstanceOf(Buffer)
+      expect(buffer.length).toBeGreaterThan(1000)
+
+      server.kill()
+    })
   })
 })
