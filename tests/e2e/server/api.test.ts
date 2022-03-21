@@ -9,6 +9,7 @@ const getAvailablePort = portfinder.getPortPromise
 const RETENTION_DATA_PERIOD = 200
 
 describe('API E2E Suite Test', () => {
+  const testServer = superTest(Server())
   const commandResponse = JSON.stringify({
     result: 'ok'
   })
@@ -27,6 +28,12 @@ describe('API E2E Suite Test', () => {
     })
     return stream.pipe(transform)
   }
+
+  test('GET /unknown - given an unknown route it should respond with 404 status code', async () => {
+    const response = await testServer.get('/unknown')
+    expect(response.statusCode).toStrictEqual(404)
+  })
+
   describe('client workflow', () => {
     async function getTestServer (): Promise<{ testServer: SuperTest<Test>, kill: () => void }> {
       const getSupertTest = (port: number) => superTest(`http://localhost:${port}`)
@@ -42,7 +49,7 @@ describe('API E2E Suite Test', () => {
               }
             }
 
-            return resolve(response)
+            return resolve(response) 
           })
           .once('error', reject)
       })
