@@ -1,5 +1,7 @@
 import Server from '../../../server/server'
+import config from '../../../server/config'
 import superTest, { SuperTest, Test } from 'supertest'
+import fs from 'fs'
 import portfinder from 'portfinder'
 import { Transform, Writable } from 'stream'
 import {
@@ -7,6 +9,15 @@ import {
 } from 'timers/promises'
 const getAvailablePort = portfinder.getPortPromise
 const RETENTION_DATA_PERIOD = 200
+
+const {
+  dir: {
+    publicDirectory
+  },
+  pages: {
+    homeHTML
+  }
+} = config
 
 describe('API E2E Suite Test', () => {
   const testServer = superTest(Server())
@@ -38,6 +49,12 @@ describe('API E2E Suite Test', () => {
     const response = await testServer.get('/')
     expect(response.headers.location).toStrictEqual('/home')
     expect(response.statusCode).toStrictEqual(302)
+  })
+
+  test('GET /home - it should respond with file stream', async () => {
+    const response = await testServer.get('/home')
+    const homePage = await fs.promises.readFile(`${publicDirectory}/${homeHTML}`)
+    expect(response.text).toStrictEqual(homePage.toString())
   })
 
   describe('client workflow', () => {
