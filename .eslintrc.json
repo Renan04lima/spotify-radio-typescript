@@ -8,6 +8,7 @@
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/return-await": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "import/export": "off"
+    "import/export": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
   }
 }
