@@ -4,7 +4,8 @@ import { Service } from '../../../server/service'
 import TestUtil from '../_util/test-util'
 import fsPromises from 'fs/promises'
 import childProcess from 'child_process'
-import { PassThrough, Writable } from 'stream'
+import { PassThrough, Readable, Writable } from 'stream'
+import streamsPromises from 'stream/promises'
 
 jest.mock('fs')
 jest.mock('child_process')
@@ -13,7 +14,8 @@ const {
     publicDirectory
   },
   constants: {
-    fallbackBitRate
+    fallbackBitRate,
+    bitRateDivisor
   }
 } = config
 
@@ -169,6 +171,49 @@ describe('#Service', () => {
       expect(writable).toBeInstanceOf(Writable)
       // expect(sut.clientStreams.delete).toHaveBeenCalled()
       expect(onData).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('startStreamming()', () => {
+    test('it should call the sox command', async () => {
+      const currentSong = 'mySong.mp3'
+      sut.currentSong = currentSong
+      const currentReadable = TestUtil.generateReadableStream(['abc']) as ReadStream
+      const expectedResult = jest.fn()
+      const writableBroadCaster = TestUtil.generateWritableStream(() => {})
+
+      jest.spyOn(
+        sut,
+        'getBitRate'
+      ).mockResolvedValue(fallbackBitRate)
+
+      jest.spyOn(
+        streamsPromises,
+        'pipeline'
+      ).mockImplementationOnce(async () => { expectedResult() })
+
+      jest.spyOn(
+        fs,
+        'createReadStream'
+      ).mockReturnValue(currentReadable)
+
+      jest.spyOn(
+        sut,
+        'broadCast'
+      ).mockReturnValue(writableBroadCaster)
+
+      const expectedThrottle = parseFloat(fallbackBitRate) / bitRateDivisor
+      await sut.startStreamming()
+
+      expect(sut.currentBitRate).toEqual(expectedThrottle)
+      expect(expectedResult).toHaveBeenCalled()
+      expect(sut.getBitRate).toHaveBeenCalledWith(currentSong)
+      expect(fs.createReadStream).toHaveBeenCalledWith(currentSong)
+      expect(streamsPromises.pipeline).toHaveBeenCalledWith(
+        currentReadable,
+        sut.throttleTransform,
+        sut.broadCast()
+      )
     })
   })
 })
