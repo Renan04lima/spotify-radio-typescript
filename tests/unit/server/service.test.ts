@@ -6,6 +6,7 @@ import fsPromises from 'fs/promises'
 import childProcess from 'child_process'
 import { PassThrough, Writable } from 'stream'
 import streamsPromises from 'stream/promises'
+import Throttle from 'throttle'
 
 jest.mock('fs')
 jest.mock('fs/promises')
@@ -246,6 +247,76 @@ describe('#Service', () => {
 
       await expect(sut.readFxByName(inputFx)).rejects.toEqual(new Error(`the song ${inputFx} wasn't found!`))
       expect(fsPromises.readdir).toHaveBeenCalledWith(fxDirectory)
+    })
+  })
+
+  describe('appendFxStream()', () => {
+    test('appendFxStream should work correctly', async () => {
+      const currentFx = 'fx.mp3'
+      sut.throttleTransform = new PassThrough()
+      sut.currentReadable = TestUtil.generateReadableStream(['abc']) as ReadStream
+
+      const mergedthrottleTransformMock = new PassThrough() as unknown as ReadStream
+      const expectedFirstCallResult = jest.fn()
+      const expectedSecondCallResult = jest.fn()
+      const writableBroadCaster = TestUtil.generateWritableStream(() => {})
+
+      const pipelineSpy = jest.spyOn(
+        streamsPromises,
+        'pipeline'
+      )
+        .mockImplementationOnce(async () => { expectedFirstCallResult() })
+        .mockImplementationOnce(async () => { expectedSecondCallResult() })
+
+      jest.spyOn(
+        sut,
+        'broadCast'
+      ).mockReturnValue(writableBroadCaster)
+
+      jest.spyOn(
+        sut,
+        'mergeAudioStreams'
+      ).mockReturnValue(mergedthrottleTransformMock)
+
+      jest.spyOn(
+        mergedthrottleTransformMock,
+        'removeListener'
+      )
+      jest.spyOn(
+        sut.throttleTransform,
+        'pause'
+      )
+
+      jest.spyOn(
+        sut.currentReadable,
+        'unpipe'
+      )
+        .mockImplementation()
+
+      sut.appendFxStream(currentFx)
+
+      expect(sut.throttleTransform.pause).toHaveBeenCalled()
+      expect(sut.currentReadable.unpipe)
+        .toHaveBeenCalledWith(sut.throttleTransform)
+
+      sut.throttleTransform.emit('unpipe')
+
+      const [call1, call2] = pipelineSpy.mock.calls
+      const [resultCall1, resultCall2] = pipelineSpy.mock.results
+
+      const [throttleTransformCall1, broadCastCall1] = call1
+      expect(throttleTransformCall1).toBeInstanceOf(Throttle)
+      expect(broadCastCall1).toStrictEqual(writableBroadCaster)
+
+      await Promise.all([resultCall1.value, resultCall2.value])
+
+      expect(expectedFirstCallResult).toHaveBeenCalled()
+      expect(expectedSecondCallResult).toHaveBeenCalled()
+
+      const [mergedStreamCall2, throttleTransformCall2] = call2
+      expect(mergedStreamCall2).toStrictEqual(mergedthrottleTransformMock)
+      expect(throttleTransformCall2).toBeInstanceOf(Throttle)
+      expect(sut.currentReadable.removeListener).toHaveBeenCalled()
     })
   })
 })
