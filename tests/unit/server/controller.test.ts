@@ -46,6 +46,30 @@ describe('#Controller', () => {
       expect(result).toEqual({ result: 'ok' })
       expect(stopStreammingSpy).toHaveBeenCalledTimes(1)
     })
+
+    test('should find and run other commands', async () => {
+      const fxName = 'applause'
+      jest.spyOn(
+        Service.prototype,
+        'readFxByName'
+      ).mockResolvedValue(fxName)
+
+      jest.spyOn(
+        Service.prototype,
+        'appendFxStream'
+      ).mockReturnValue()
+
+      const data = {
+        command: 'MY_FX_NAME'
+      }
+
+      const result = await sut.handleCommand(data)
+      expect(result).toStrictEqual({
+        result: 'ok'
+      })
+      expect(Service.prototype.readFxByName).toHaveBeenCalledWith(data.command.toLowerCase())
+      expect(Service.prototype.appendFxStream).toHaveBeenCalledWith(fxName)
+    })
   })
 
   describe('createClientStream()', () => {
