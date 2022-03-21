@@ -158,6 +158,30 @@ describe('#Routes - test suite for API response', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
+  test('POST /controller - should call handleCommand', async () => {
+    const { request, response } = TestUtil.defaultHandleParams()
+    request.method = 'POST'
+    request.url = '/controller'
+    const body = {
+      command: 'start'
+    }
+    request.push(JSON.stringify(body))
+
+    const jsonResult = {
+      result: 'ok'
+    }
+    jest.spyOn(
+      Controller.prototype,
+      'handleCommand'
+    )
+      .mockResolvedValue(jsonResult)
+
+    await handler(request, response)
+
+    expect(Controller.prototype.handleCommand).toHaveBeenCalledWith(body)
+    expect(response.end).toHaveBeenCalledWith((JSON.stringify(jsonResult)))
+  })
+
   describe('exceptions', () => {
     test('given an inexistent file it should respond with 404', async () => {
       const { request, response } = TestUtil.defaultHandleParams()
