@@ -34,6 +34,12 @@ describe('API E2E Suite Test', () => {
     expect(response.statusCode).toStrictEqual(404)
   })
 
+  test('GET / - it should respond with the home location and 302 status code', async () => {
+    const response = await testServer.get('/')
+    expect(response.headers.location).toStrictEqual('/home')
+    expect(response.statusCode).toStrictEqual(302)
+  })
+
   describe('client workflow', () => {
     async function getTestServer (): Promise<{ testServer: SuperTest<Test>, kill: () => void }> {
       const getSupertTest = (port: number) => superTest(`http://localhost:${port}`)
@@ -49,7 +55,7 @@ describe('API E2E Suite Test', () => {
               }
             }
 
-            return resolve(response) 
+            return resolve(response)
           })
           .once('error', reject)
       })
